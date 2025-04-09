@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: at-agent-ui
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-wildcard
+    kubernetes.io/ingress.class: "nginx-internal"
+
+spec:
+  tls:
+  - hosts:
+    - $(APP_HOST)
+    secretName: $(APP_NAME)-letsencrypt
+  rules:
+  - host: $(APP_HOST)
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: at-agent-ui
+            port: 
+              number: 3000

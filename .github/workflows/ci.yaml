@@ -1,0 +1,19 @@
+---
+name: CI
+on:
+  push:
+    branches:
+    - main
+    paths-ignore:
+      - .argocd/**
+      - .github/**
+      - .k8s/**
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: arcotech-services/github-workflows/.github/workflows/docker-build.yaml@v1.0.57
+    with:
+      REGISTRY: ghcr.io
+    secrets: inherit

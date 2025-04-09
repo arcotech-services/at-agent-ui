@@ -1,0 +1,35 @@
+---
+name: CD
+
+on:
+  workflow_run:
+    branches:
+      - main
+    workflows:
+      - "CI"
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  kubeval:
+    uses: arcotech-services/github-workflows/.github/workflows/kubeval.yaml@v1.0.57
+    with:
+      MANIFESTS_PATH: .k8s/overlays
+
+  deploy-stg:
+    needs: kubeval
+    uses: arcotech-services/github-workflows/.github/workflows/k8s-deploy.yaml@v1.0.57
+    with:
+      ENVIRONMENT: staging
+      HAS_MONITORING: true
+    secrets: inherit
+
+  deploy-prd:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: deploy-stg
+    uses: arcotech-services/github-workflows/.github/workflows/k8s-deploy.yaml@v1.0.57
+    with:
+      ENVIRONMENT: production
+      HAS_MONITORING: true
+    secrets: inherit
