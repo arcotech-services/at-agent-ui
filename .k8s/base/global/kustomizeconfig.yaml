@@ -1,0 +1,39 @@
+---
+varReference:
+  # ingress
+  - kind: Ingress
+    path: metadata/annotations
+  - kind: Ingress
+    path: spec/tls/hosts
+  - kind: Ingress
+    path: spec/rules/host
+  - kind: Ingress
+    path: spec/ingressClassName
+  - kind: Ingress
+    path: spec/tls/secretName
+  - kind: Ingress
+    path: spec/rules/http/paths/backend/service
+  # configmap
+  - kind: ConfigMap
+    path: data
+  # uptimerobot
+  - kind: CronJob
+    path: spec/jobTemplate/spec/template/spec/containers/env/name
+  - kind: CronJob
+    path: spec/jobTemplate/spec/template/spec/imagePullSecrets/name
+  # deployment
+  - kind: Deployment
+    path: spec/template/spec/containers/envFrom/secretRef
+  - kind: Deployment
+    path: spec/template/spec/containers/livenessProbe/httpGet/path
+  - kind: Deployment
+    path: spec/template/spec/containers/readinessProbe/httpGet/path
+  - kind: Deployment
+    path: spec/template/spec/imagePullSecrets/name
+  - kind: Deployment
+    path: spec/template/spec/containers/resources/requests
+  - kind: Deployment
+    path: spec/template/spec/containers/resources/limits
+  # externalsecrets
+  - kind: ExternalSecret
+    path: spec/dataFrom/extract

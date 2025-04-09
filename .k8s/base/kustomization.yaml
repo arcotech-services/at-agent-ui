@@ -2,64 +2,21 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-resources:
-- external-secrets.yaml
-- configmap.yaml
-- deployment.yaml
-- services.yaml  
-- ingress.yaml
-- uptimerobot.yaml
+namePrefix: at-agent-ui-
+namespace: at-agent-ui
+commonLabels:
+  io.arcotech.app: at-agent-ui
+  io.arcotech.team: arcotech
+  io.arcotech.domain: arcotech
 
 generatorOptions:
   disableNameSuffixHash: true
 
-configMapGenerator:
-  - name: at-agent-ui-metadata
-
-configurations:
-  - kustomizeconfig.yaml
-
-vars:
-- name: APP_ENV
-  objref:
-    kind: ConfigMap
-    name: at-agent-ui-metadata
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.APP_ENV
-- name: APP_HOST
-  objref:
-    kind: ConfigMap
-    name: at-agent-ui-metadata
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.APP_HOST
-- name: PROJECT
-  objref:
-    kind: ConfigMap
-    name: at-agent-ui-metadata
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.PROJECT
-- name: APP_NAME
-  objref:
-    kind: ConfigMap
-    name: at-agent-ui-metadata
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.APP_NAME
-- name: UR_HEARTBEAT
-  objref:
-    kind: ConfigMap
-    name: at-agent-ui-metadata
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.UR_HEARTBEAT
-- name: HEALTH_CHECK
-  objref:
-    kind: ConfigMap
-    name: at-agent-ui-metadata
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.HEALTH_CHECK
-       
+resources:
+  - ../base/global
+  - external-secrets.yaml
+  - deployment.yaml
+  - services.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - uptimerobot.yaml

@@ -2,16 +2,23 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-commonLabels:
-  io.arcotech.app: at-agent-ui
-
-namespace: at-agent-ui
-
-bases:
+resources:
   - ../../base
+
+patchesStrategicMerge:
+  - overlays.yaml
 
 configMapGenerator:
   - behavior: merge
     envs:
-      - .env
-    name: at-agent-ui-metadata
+      - application.properties
+      - infra.properties
+    name: conf
+
+patches:
+  - target:
+      kind: CronJob
+    path: ./patches/endpointmonitor-patch.yaml
+  - target:
+      kind: Ingress
+    path: ./patches/ingress-patch.yaml

@@ -1,67 +1,61 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: at-agent-ui
+  name: deployment
   labels:
-    io.arcotech.app: at-agent-ui
-    io.arcotech.service: api
+    io.arcotech.component: api
   annotations:
     reloader.stakater.com/search: "true"
 spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 60%
-      maxUnavailable: 40%
+      maxSurge: 70%
+      maxUnavailable: 30%
   selector:
     matchLabels:
-      io.arcotech.app: at-agent-ui
-      io.arcotech.service: api
+      io.arcotech.component: api
   template:
     metadata:
       labels:
-        io.arcotech.app: at-agent-ui
-        io.arcotech.service: api
+        io.arcotech.component: api
     spec:
       containers:
-      - name: at-agent-ui
-        image: ghcr.io/arcotech-services/at-agent-ui:latest
-        imagePullPolicy: IfNotPresent
-        envFrom:
-        - configMapRef:
-            name: at-agent-ui-envs
-        - configMapRef:
-            name: at-agent-ui-metadata
-        - secretRef:
-            name: at-agent-ui-secrets
-        ports:
-        - name: http
-          containerPort: 3000
-        resources:
-          requests:
-            cpu: 300m
-            memory: 700Mi
-          limits:
-            cpu: 1000m
-            memory: 700Mi
-        readinessProbe:
-          httpGet:
-            path: $(HEALTH_CHECK)
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          successThreshold: 1
-          failureThreshold: 3
-          timeoutSeconds: 5
-        livenessProbe:
-          httpGet:
-            path: $(HEALTH_CHECK)
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          successThreshold: 1
-          failureThreshold: 3
-          timeoutSeconds: 5
+        - name: app
+          image: ghcr.io/arcotech-services/at-agent-ui:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: conf
+            - secretRef:
+                name: $(APP_NAME)-secrets
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+            requests:
+              cpu: $(CPU_MIN)
+              memory: $(MEM_MIN)
+            limits:
+              cpu: $(CPU_MAX)
+              memory: $(MEM_MAX)
+          livenessProbe:
+            httpGet:
+              path: $(HEALTH_CHECK)
+              port: http
+            periodSeconds: 25
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: $(HEALTH_CHECK)
+              port: http
+            periodSeconds: 25
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
       restartPolicy: Always
       imagePullSecrets:
-      - name: arcotech-docker-registry-api
+        - name: $(APP_NAME)-arcotech-registry

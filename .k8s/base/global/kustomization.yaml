@@ -1,0 +1,104 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configurations:
+  - kustomizeconfig.yaml
+
+configMapGenerator:
+  - name: conf
+    envs:
+      - application.properties
+      - infra.properties
+    options:
+      annotations:
+        reloader.stakater.com/match: "true"
+
+vars:
+  - name: APP_ENV
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.APP_ENV
+  - name: DOMAIN
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.DOMAIN
+  - name: APP_NAME
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.APP_NAME
+  - name: HEALTH_CHECK
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.HEALTH_CHECK
+  - name: UR_HEARTBEAT
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.UR_HEARTBEAT
+  - name: WAF_ARN
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.WAF_ARN
+  - name: IG_SCHEME
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.IG_SCHEME
+  - name: CERT_ARN
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.CERT_ARN
+  - name: CPU_MIN
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.CPU_MIN
+  - name: CPU_MAX
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.CPU_MAX
+  - name: MEM_MIN
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.MEM_MIN
+  - name: MEM_MAX
+    objref:
+      kind: ConfigMap
+      name: conf
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.MEM_MAX
