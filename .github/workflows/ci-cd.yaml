@@ -1,0 +1,50 @@
+---
+name: CI-CD
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - .argocd/**
+      - .github/**
+      - .k8s/**
+      - .terraform/**
+      - atlantis.yaml
+
+  workflow_dispatch:
+
+concurrency:
+  group: ci-cd
+  cancel-in-progress: false
+
+jobs:
+  kubeval:
+    uses: arcotech-services/github-workflows/.github/workflows/kubeval.yaml@v1.0.57
+    with:
+      MANIFESTS_PATH: .k8s/overlays
+
+  build:
+    needs: [kubeval]
+    uses: arcotech-services/github-workflows/.github/workflows/docker-build.yaml@v1.0.57
+    with:
+      REGISTRY: ghcr.io
+    secrets: inherit
+
+  deploy-stg:
+    needs: build
+    uses: arcotech-services/github-workflows/.github/workflows/k8s-deploy.yaml@v1.0.57
+    with:
+      ENVIRONMENT: staging
+      HAS_MONITORING: true
+    secrets: inherit
+
+  deploy-prd:
+    if: |
+        github.ref == 'refs/heads/main' &&
+        !contains(github.event.head_commit.message, '[bypass]')
+    needs: deploy-stg
+    uses: arcotech-services/github-workflows/.github/workflows/k8s-deploy.yaml@v1.0.57
+    with:
+      ENVIRONMENT: production
+      HAS_MONITORING: true
+    secrets: inherit

@@ -1,0 +1,25 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: at-agent-ui-stg
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "at-agent-ui"
+  sourceRepos:
+    - 'git@github.com:arcotech-services/at-agent-ui.git'
+  destinations:
+    - server: https://38CA0BE3D9CF1CBBACA871EE526BF5F3.gr7.us-east-1.eks.amazonaws.com
+      namespace: at-agent-ui
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true
+    ignore:
+      - kind: ConfigMap
+        name: kube-root-ca.crt

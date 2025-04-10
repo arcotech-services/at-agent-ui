@@ -1,0 +1,40 @@
+---
+name: "k8s sync"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '!.k8s/overlays/dev'
+      - '.k8s/**'
+      - '.argocd/**'
+
+  workflow_dispatch:
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  kubeval:
+    uses: arcotech-services/github-workflows/.github/workflows/kubeval.yaml@v1.0.57
+    with:
+      MANIFESTS_PATH: .k8s/overlays
+
+  sync-stg:
+    uses: arcotech-services/github-workflows/.github/workflows/k8s-sync.yaml@v1.0.57
+    needs: kubeval
+    with:
+      STAGE: stg
+      ENVIRONMENT: staging
+    secrets: inherit
+
+  sync-prd:
+    needs: sync-stg
+    if: ${{ github.ref == 'refs/heads/main' }}
+    uses: arcotech-services/github-workflows/.github/workflows/k8s-sync.yaml@v1.0.57
+    with:
+      STAGE: prd
+      ENVIRONMENT: production
+    secrets: inherit

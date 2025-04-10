@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namePrefix: at-agent-ui-
+namespace: at-agent-ui
+commonLabels:
+  io.arcotech.app: at-agent-ui
+  io.arcotech.team: arcotech
+  io.arcotech.domain: arcotech
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+  - ../base/global
+  - external-secrets.yaml
+  - deployment.yaml
+  - services.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - uptimerobot.yaml

@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: heartbeat-at-agent-ui
+  labels:
+    io.arcotech.service: heartbeat-at-agent-ui
+spec:
+  schedule: "*/2 * * * *"
+  successfulJobsHistoryLimit: 1 
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: app
+            image: alpine/curl:8.1.2
+            env:
+              - name: endpoint_app
+                value: https://$(APP_HOST)$(HEALTH_CHECK)
+              - name: endpoint_monitor
+                value: $(UR_HEARTBEAT)
+              - name: expected_status_code
+                value: "200"
+            command:
+              - /bin/sh
+              - '-c'
+              - /app/heartbeat.sh
+            volumeMounts:
+              - name: heartbeat-script
+                mountPath: /app/
+            imagePullPolicy: IfNotPresent
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: arcotech-docker-registry-api
+          volumes:
+            - name: heartbeat-script
+              configMap:
+                name: heartbeat-script
+                defaultMode: 0550
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: heartbeat-script
+data:
+  heartbeat.sh: |
+    export status_app=$(curl --silent --output /dev/null --write-out "%{http_code}" $endpoint_app)
+    if [[ $status_app == $expected_status_code ]]; then
+      curl $endpoint_monitor
+      echo "Aplicaçao up, status $status_app"
+    else
+      echo "Aplicação indisponível, status: $status_app"
+    fi

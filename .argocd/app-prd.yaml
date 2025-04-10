@@ -1,0 +1,20 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: at-agent-ui-prd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: at-agent-ui-prd
+  revisionHistoryLimit: 10
+  source:
+    repoURL: 'git@github.com:arcotech-services/at-agent-ui.git'
+    targetRevision: main
+    path: .k8s/overlays/prd
+  destination:
+    server: https://99A9F2FCF28227744EEE6056BDF22C91.gr7.us-east-1.eks.amazonaws.com
+    namespace: at-agent-ui
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

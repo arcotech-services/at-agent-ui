@@ -1,0 +1,20 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: at-agent-ui-stg
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: at-agent-ui-stg
+  revisionHistoryLimit: 5
+  source:
+    repoURL: 'git@github.com:arcotech-services/at-agent-ui.git'
+    targetRevision: main
+    path: .k8s/overlays/stg
+  destination:
+    server: https://38CA0BE3D9CF1CBBACA871EE526BF5F3.gr7.us-east-1.eks.amazonaws.com
+    namespace: at-agent-ui
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

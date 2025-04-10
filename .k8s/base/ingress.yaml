@@ -1,0 +1,55 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx
+  labels:
+    io.arcotech.component: api
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-wildcard
+spec:
+  ingressClassName: $(IG_SCHEME)
+  tls:
+    - hosts:
+        - $(APP_NAME).$(DOMAIN)
+      secretName: $(APP_NAME)-letsencrypt
+  rules:
+    - host: $(APP_NAME).$(DOMAIN)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: $(APP_NAME)-service
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alb
+  labels:
+    io.arcotech.component: api
+  annotations:
+    alb.ingress.kubernetes.io/wafv2-acl-arn: $(WAF_ARN)
+    alb.ingress.kubernetes.io/certificate-arn: $(CERT_ARN)
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/scheme: $(IG_SCHEME)
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/healthcheck-path: $(HEALTH_CHECK)
+    alb.ingress.kubernetes.io/success-codes: "200-404"
+spec:
+  ingressClassName: alb
+  rules:
+    - host: $(APP_NAME).$(DOMAIN)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: $(APP_NAME)-service
+                port:
+                  name: http

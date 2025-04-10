@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+  labels:
+    io.arcotech.component: api
+  annotations:
+    reloader.stakater.com/search: "true"
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 70%
+      maxUnavailable: 30%
+  selector:
+    matchLabels:
+      io.arcotech.component: api
+  template:
+    metadata:
+      labels:
+        io.arcotech.component: api
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/arcotech-services/at-agent-ui:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: conf
+            - secretRef:
+                name: $(APP_NAME)-secrets
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+            requests:
+              cpu: $(CPU_MIN)
+              memory: $(MEM_MIN)
+            limits:
+              cpu: $(CPU_MAX)
+              memory: $(MEM_MAX)
+          livenessProbe:
+            httpGet:
+              path: $(HEALTH_CHECK)
+              port: http
+            periodSeconds: 25
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: $(HEALTH_CHECK)
+              port: http
+            periodSeconds: 25
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: $(APP_NAME)-arcotech-registry
